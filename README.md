@@ -42,15 +42,18 @@ The system follows a **hub-and-spoke distributed architecture**.
 
 ````mermaid
 graph LR
-    A[Field Agent (Mobile)]
+    A[Field Agent Mobile]
+    L[(SQLite Local DB)]
     B[FastAPI Gateway]
     C[(PostgreSQL DB)]
-    D[HQ Manager (Web)]
+    D[HQ Manager Web]
 
-    A -- Offline Storage (SQLite) --> A
-    A -- Sync (JSON/HTTP) --> B
-    B -- Persist --> C
-    D -- Polls Data --> B
+    A --> L
+    L --> A
+    A --> B
+    B --> C
+    D --> B
+
 ````
 
 ## 🧠 Technical Decisions

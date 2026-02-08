@@ -51,6 +51,7 @@ graph LR
     A -- Sync (JSON/HTTP) --> B
     B -- Persist --> C
     D -- Polls Data --> B
+````
 
 ## 🧠 Technical Decisions
 
@@ -87,7 +88,7 @@ graph LR
 ```bash
 cd backend
 python -m venv venv
-
+```
 # Windows
 venv\Scripts\activate
 
@@ -152,4 +153,3 @@ Sourav Chahar
 Role: Full Stack Engineer
 
 Focus: Distributed Systems & Mobile Architecture
-````

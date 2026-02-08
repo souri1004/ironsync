@@ -40,7 +40,7 @@ IronSync uses a **local-first architecture**, allowing inspectors to log defects
 
 The system follows a **hub-and-spoke distributed architecture**.
 
-```mermaid
+````mermaid
 graph LR
     A[Field Agent (Mobile)]
     B[FastAPI Gateway]
@@ -51,3 +51,105 @@ graph LR
     A -- Sync (JSON/HTTP) --> B
     B -- Persist --> C
     D -- Polls Data --> B
+
+## 🧠 Technical Decisions
+
+| Component | Tech Stack | Reason |
+|----------|------------|--------|
+| Mobile DB | SQLite (Drift) | ACID compliance and structured querying for thousands of offline records |
+| Backend | FastAPI (Python) | High performance with async/await and rapid development |
+| Protocol | REST + JSON | Lightweight, universal, and bandwidth-efficient |
+| Web UI | React + Vite | Fast SPA with real-time dashboard updates |
+
+---
+
+## 📸 Screenshots
+
+| Mobile Offline Mode | Sync Terminal | Manager Dashboard |
+|--------------------|--------------|------------------|
+| Audits stored locally (orange dot = pending) | Server acknowledging receipt | Dark-mode dashboard updating in real time |
+
+---
+
+## 🛠️ How to Run Locally
+
+### Prerequisites
+
+- Flutter SDK
+- Python 3.8+
+- Node.js & npm
+- PostgreSQL (or Docker)
+
+---
+
+### 1️⃣ Backend (FastAPI)
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+
+pip install fastapi uvicorn sqlalchemy psycopg2-binary
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+### 2️⃣ Mobile App (Flutter)
+cd mobile
+flutter pub get
+dart run build_runner build
+flutter run
+
+### 3️⃣ Web Dashboard (React)
+cd web
+npm install
+npm run dev
+
+Open: http://localhost:5173
+
+### 🧩 Deep Dive: Sync Logic
+
+## Creation
+
+New audits are stored locally in SQLite with syncStatus = 1 (Pending).
+
+## Detection
+
+Sync service queries:
+
+SELECT * FROM audits WHERE syncStatus = 1;
+
+## Transmission
+
+Records are serialized to JSON and sent to:
+
+POST /sync/upload
+
+## Confirmation
+
+On receiving 200 OK, the app updates:
+
+syncStatus = 0
+
+
+This idempotent design ensures that if the network fails mid-sync, no data is corrupted—the app simply retries later.
+
+### 🔮 Future Roadmap
+
+ Bi-directional sync (server → mobile)
+- [ ] Bi-directional sync (server → mobile)
+- [ ] Conflict resolution for concurrent edits
+- [ ] Image compression for low-bandwidth networks
+
+
+### 👨‍💻 Author
+
+Sourav Chahar
+
+Role: Full Stack Engineer
+
+Focus: Distributed Systems & Mobile Architecture
+````

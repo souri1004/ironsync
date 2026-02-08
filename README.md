@@ -90,25 +90,29 @@ cd backend
 python -m venv venv
 ```
 # Windows
+```bash
 venv\Scripts\activate
-
+```
 # macOS / Linux
+```bash
 source venv/bin/activate
 
 pip install fastapi uvicorn sqlalchemy psycopg2-binary
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
+```
 ### 2️⃣ Mobile App (Flutter)
+```bash
 cd mobile
 flutter pub get
 dart run build_runner build
 flutter run
-
+```
 ### 3️⃣ Web Dashboard (React)
+```bash
 cd web
 npm install
 npm run dev
-
+```
 Open: http://localhost:5173
 
 ### 🧩 Deep Dive: Sync Logic

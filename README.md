@@ -124,21 +124,21 @@ New audits are stored locally in SQLite with syncStatus = 1 (Pending).
 ## Detection
 
 Sync service queries:
-
+```bash
 SELECT * FROM audits WHERE syncStatus = 1;
-
+```
 ## Transmission
 
 Records are serialized to JSON and sent to:
-
+```bash
 POST /sync/upload
-
+```
 ## Confirmation
 
 On receiving 200 OK, the app updates:
-
+```bash
 syncStatus = 0
-
+```
 
 This idempotent design ensures that if the network fails mid-sync, no data is corrupted—the app simply retries later.
 

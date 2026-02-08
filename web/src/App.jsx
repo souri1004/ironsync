@@ -1,34 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [audits, setAudits] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch Data Function
+  const fetchAudits = async () => {
+    try {
+      setLoading(true) // Show loading state briefly on refresh
+      const response = await axios.get('http://localhost:8000/audits/') 
+      setAudits(response.data)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Run on page load & auto-refresh
+  useEffect(() => {
+    fetchAudits()
+    const interval = setInterval(fetchAudits, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="dashboard-container">
+      {/* Header Section */}
+      <header className="header">
+        <div className="title">
+          <h1>IronSync Command Center</h1>
+          <div className="subtitle">Real-time Field Operations Monitor</div>
+        </div>
+        <button className="refresh-btn" onClick={fetchAudits}>
+          Refresh Data ↻
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      </header>
+
+      {/* Main Content */}
+      <div className="table-container">
+        {loading && audits.length === 0 ? (
+          <div className="empty-state">Loading satellite data...</div>
+        ) : audits.length === 0 ? (
+          <div className="empty-state">
+            <h3>No Active Audits</h3>
+            <p>Field agents are offline. Waiting for sync uplink...</p>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Audit ID</th>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Inspector</th>
+                <th>Live Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {audits.map((audit) => (
+                <tr key={audit.id}>
+                  <td style={{ fontFamily: 'monospace', color: '#64748b' }}>
+                    {String(audit.id).substring(0, 8)}...
+                  </td>
+                  <td style={{ fontWeight: '600' }}>{audit.title}</td>
+                  <td>{audit.site_location}</td>
+                  <td>
+                    <span style={{ color: '#94a3b8' }}>Agent: </span>
+                    {audit.inspector_id}
+                  </td>
+                  <td>
+                    <div className="status-badge">
+                      <span className="dot"></span>
+                      SYNCED
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
 

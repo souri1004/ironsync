@@ -77,18 +77,32 @@ def read_audits(db: Session = Depends(get_db)):
 # ... (Previous imports)
 
 # 1. Add this Pydantic Model for receiving data
+# --- UPDATE THIS SECTION ---
+
 class AuditSchema(BaseModel):
     title: str
     inspector_id: str
     site_location: str
     created_at: str
 
-# 2. Add this Endpoint
 @app.post("/sync/upload")
-def upload_audit(audit: AuditSchema, db: Session = Depends(get_db)):
-    print(f"📥 RECEIVED: {audit.title} from {audit.inspector_id}")
+def upload_audit(audit_data: AuditSchema, db: Session = Depends(get_db)):
+    print(f"📥 RECEIVED: {audit_data.title} from {audit_data.inspector_id}")
     
-    # In a real app, we would save this to Postgres here.
-    # For now, we just return "Success" to prove the connection works.
+    # 1. Create the Database Record
+    new_audit = Audit(
+        title=audit_data.title,
+        inspector_id=audit_data.inspector_id,
+        site_location=audit_data.site_location
+    )
     
-    return {"status": "received", "id": audit.title}
+    # 2. Add to Transaction
+    db.add(new_audit)
+    
+    # 3. Commit (Save) to Disk
+    db.commit()
+    db.refresh(new_audit)
+    
+    print(f"✅ SAVED to DB with ID: {new_audit.id}")
+
+    return {"status": "received", "id": str(new_audit.id)}

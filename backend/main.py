@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from models import Base, Audit, Defect
@@ -15,6 +17,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (React, Mobile, etc.)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows GET, POST, PUT, DELETE
+    allow_headers=["*"],
+)
 
 # Dependency
 def get_db():
@@ -63,3 +73,22 @@ def create_audit(audit_data: AuditCreate, db: Session = Depends(get_db)):
 @app.get("/audits/")
 def read_audits(db: Session = Depends(get_db)):
     return db.query(Audit).all()
+
+# ... (Previous imports)
+
+# 1. Add this Pydantic Model for receiving data
+class AuditSchema(BaseModel):
+    title: str
+    inspector_id: str
+    site_location: str
+    created_at: str
+
+# 2. Add this Endpoint
+@app.post("/sync/upload")
+def upload_audit(audit: AuditSchema, db: Session = Depends(get_db)):
+    print(f"📥 RECEIVED: {audit.title} from {audit.inspector_id}")
+    
+    # In a real app, we would save this to Postgres here.
+    # For now, we just return "Success" to prove the connection works.
+    
+    return {"status": "received", "id": audit.title}
